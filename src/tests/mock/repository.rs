@@ -2,7 +2,6 @@ use std::ops::Deref;
 use std::sync::Arc;
 
 use crate::database::WorkflowStatus;
-use crate::github::CommitSha;
 use crate::tests::BranchPushError;
 use crate::tests::github::{CheckRunData, Commit, GitUser, WorkflowRun};
 use crate::tests::mock::pull_request::mock_pull_requests;
@@ -489,7 +488,7 @@ async fn mock_contents(repo: Arc<Mutex<Repo>>, mock_server: &MockServer) {
 
             // Request for overridden file content at a specific commit SHA
             if let Some(sha) = sha {
-                let file = repo.contents.get(&CommitSha(sha));
+                let file = repo.get_contents_at_sha_prefix(&sha);
                 if let Some(file) = file {
                     return match file {
                         Some(content) => ResponseTemplate::new(200)

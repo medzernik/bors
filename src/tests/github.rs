@@ -388,7 +388,9 @@ pub struct Repo {
     pub push_behaviour: BranchPushBehaviour,
     pub fork_of: Option<Arc<Mutex<Repo>>>,
     pub merge_behavior: MergeBehavior,
-    pub contents: HashMap<CommitSha, Option<String>>,
+    /// File (or its absence) that will be returned if someone asks for contents on a SHA that
+    /// **begins** with the key in this map.
+    contents: Vec<(String, Option<String>)>,
 }
 
 impl Repo {
@@ -446,6 +448,23 @@ impl Repo {
     pub fn with_user_perms(mut self, user: User, permissions: &[PermissionType]) -> Self {
         self.permissions.users.insert(user, permissions.to_vec());
         self
+    }
+
+    /// Return a file that was asked on the given `sha`.
+    /// Note: completely ignores the path of the file!
+    pub fn get_contents_at_sha_prefix(&self, sha: &str) -> Option<Option<&str>> {
+        self.contents.iter().find_map(|(sha_prefix, file)| {
+            if sha.starts_with(sha_prefix) {
+                Some(file.as_deref())
+            } else {
+                None
+            }
+        })
+    }
+
+    pub fn add_contents_at_sha_prefix(&mut self, sha_prefix: &str, contents: Option<&str>) {
+        self.contents
+            .push((sha_prefix.to_string(), contents.map(|s| s.to_string())))
     }
 
     pub fn add_pr(&mut self, author: User) -> &mut PullRequest {

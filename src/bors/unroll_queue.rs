@@ -1,6 +1,4 @@
-use crate::bors::build::{
-    StartBuildCommit, StartBuildContext, StartBuildError, StartBuildOutcome, start_build,
-};
+use crate::bors::build::{StartBuildContext, StartBuildError, StartBuildOutcome, start_build};
 use crate::bors::{BuildKind, Comment, RepositoryState, TRY_PERF_BRANCH_NAME, bors_commit_author};
 use crate::database::{
     BuildModel, BuildStatus, ExclusiveOperationOutcome, PullRequestModel, RollupMemberForUnrolling,
@@ -401,21 +399,22 @@ async fn start_unrolled_build(
                         ci_branch: TRY_PERF_BRANCH_NAME.to_string(),
                         base_sha,
                         head_sha,
-                        build_kind: BuildKind::UnrolledMember,
-                    },
-                    StartBuildCommit {
                         message,
                         author: bors_commit_author(),
+                        // Both the members and the rollup are merged, and the GitHub UI does not show
+                        // check runs for merged PRs, so this is unnecessary
+                        check_run: None,
+                        build_kind: BuildKind::UnrolledMember,
                     },
-                    // Both the members and the rollup are merged, and the GitHub UI does not show
-                    // check runs for merged PRs, so this is unnecessary
-                    None,
                     &member.pr,
                 )
                 .await
                 .map_err(|e| match e {
-                    StartBuildError::GithubError(e) => e,
-                    StartBuildError::DatabaseError(e) => e,
+                    StartBuildError::Github(e) => e,
+                    StartBuildError::Database(e) => e,
+                    StartBuildError::ConfigCheck(e) => {
+                        anyhow::anyhow!("Invalid bors config: {e:?}")
+                    }
                 })?;
                 match outcome {
                     StartBuildOutcome::Success {
