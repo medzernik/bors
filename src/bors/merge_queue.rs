@@ -9,8 +9,7 @@ use tracing::Instrument;
 use super::{Comment, MergeType, bors_commit_author, create_merge_commit_message};
 use crate::bors::build::load_workflow_runs;
 use crate::bors::build::{
-    StartBuildCheckRun, StartBuildCommit, StartBuildContext, StartBuildError, StartBuildOutcome,
-    start_build,
+    StartBuildCheckRun, StartBuildContext, StartBuildError, StartBuildOutcome, start_build,
 };
 use crate::bors::comment::{
     auto_build_push_failed_comment, auto_build_started_comment, auto_build_succeeded_comment,
@@ -755,16 +754,14 @@ async fn start_auto_build(
             ci_branch: AUTO_BRANCH_NAME.to_string(),
             base_sha: base_sha.clone(),
             head_sha: head_sha.clone(),
-            build_kind: BuildKind::Auto,
-        },
-        StartBuildCommit {
             message: auto_merge_commit_message,
             author: bors_commit_author(),
+            check_run: Some(StartBuildCheckRun {
+                name: AUTO_BUILD_CHECK_RUN_NAME.to_string(),
+                title: AUTO_BUILD_CHECK_RUN_NAME.to_string(),
+            }),
+            build_kind: BuildKind::Auto,
         },
-        Some(StartBuildCheckRun {
-            name: AUTO_BUILD_CHECK_RUN_NAME.to_string(),
-            title: AUTO_BUILD_CHECK_RUN_NAME.to_string(),
-        }),
         pr,
     )
     .await

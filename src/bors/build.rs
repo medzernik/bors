@@ -180,12 +180,13 @@ pub struct StartBuildContext {
     pub base_sha: CommitSha,
     /// PR head SHA.
     pub head_sha: CommitSha,
-    pub build_kind: BuildKind,
-}
-
-pub struct StartBuildCommit {
+    /// Commit message.
     pub message: String,
+    /// Commit author.
     pub author: CommitAuthor,
+    /// Optional information to start a check run on the merged commit.
+    pub check_run: Option<StartBuildCheckRun>,
+    pub build_kind: BuildKind,
 }
 
 /// Check run shown in the GitHub UI checks tab.
@@ -223,8 +224,6 @@ pub async fn start_build(
     repo: &RepositoryState,
     proof: &ExclusiveLockProof,
     context: StartBuildContext,
-    commit: StartBuildCommit,
-    check_run: Option<StartBuildCheckRun>,
     pr: &PullRequestModel,
 ) -> Result<StartBuildOutcome, StartBuildError> {
     let StartBuildContext {
@@ -232,9 +231,11 @@ pub async fn start_build(
         ci_branch,
         base_sha,
         head_sha,
+        message,
+        author,
         build_kind,
+        check_run,
     } = context;
-    let StartBuildCommit { message, author } = commit;
 
     // First, create the merge result commit on the merge branch.
     // Use a temporary message to not reference/spam any issue.
