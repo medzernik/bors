@@ -410,8 +410,11 @@ async fn start_unrolled_build(
                 )
                 .await
                 .map_err(|e| match e {
-                    StartBuildError::GithubError(e) => e,
-                    StartBuildError::DatabaseError(e) => e,
+                    StartBuildError::Github(e) => e,
+                    StartBuildError::Database(e) => e,
+                    StartBuildError::ConfigCheck(e) => {
+                        anyhow::anyhow!("Invalid bors config: {e:?}")
+                    }
                 })?;
                 match outcome {
                     StartBuildOutcome::Success {

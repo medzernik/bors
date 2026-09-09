@@ -547,11 +547,13 @@ This rollup has been unapproved."#,
 
             unapprove_pr(repo, &ctx.db, pr, &gh_pr.into()).await?;
             let comment = format!(
-                r#"The bors config at `{CONFIG_FILE_PATH}` is invalid in this PR. Parse error:
+                r#"Merging this PR would produce an invalid bors config at `{CONFIG_FILE_PATH}`:
 
 ```
 {error}
 ```
+
+The pull request has been unapproved.
 "#
             );
             repo.client
@@ -719,25 +721,6 @@ async fn start_auto_build(
         .map_err(StartAutoBuildError::GitHubError)?;
     let head_sha = gh_pr.head.sha.clone();
 
-    let result = sanity_check_config(repo, &head_sha)
-        .await
-        .map_err(StartAutoBuildError::GitHubError)?;
-    match result {
-        ConfigCheckResult::Ok => {}
-        ConfigCheckResult::Missing => {
-            return Err(StartAutoBuildError::SanityCheckFailed {
-                error: SanityCheckError::ConfigMissing,
-                pr: gh_pr,
-            });
-        }
-        ConfigCheckResult::Invalid { error } => {
-            return Err(StartAutoBuildError::SanityCheckFailed {
-                error: SanityCheckError::ConfigInvalid { error },
-                pr: gh_pr,
-            });
-        }
-    }
-
     let pr_data = super::handlers::PullRequestData {
         db: pr,
         github: &gh_pr,
@@ -766,8 +749,18 @@ async fn start_auto_build(
     )
     .await
     .map_err(|error| match error {
-        StartBuildError::GithubError(error) => StartAutoBuildError::GitHubError(error),
-        StartBuildError::DatabaseError(error) => StartAutoBuildError::DatabaseError(error),
+        StartBuildError::Github(error) => StartAutoBuildError::GitHubError(error),
+        StartBuildError::Database(error) => StartAutoBuildError::DatabaseError(error),
+        StartBuildError::ConfigCheck(error) => StartAutoBuildError::SanityCheckFailed {
+            error: match error {
+                ConfigCheckError::Missing => SanityCheckError::ConfigMissing,
+                ConfigCheckError::Invalid { error } => SanityCheckError::ConfigInvalid { error },
+                ConfigCheckError::Network(error) => {
+                    return StartAutoBuildError::GitHubError(error);
+                }
+            },
+            pr: gh_pr.clone(),
+        },
     })?;
 
     let (build_commit_sha, _) = match build_commit_result {
@@ -793,30 +786,32 @@ async fn start_auto_build(
 }
 
 #[must_use]
-enum ConfigCheckResult {
-    Ok,
+#[derive(Debug)]
+pub enum ConfigCheckError {
     Missing,
     Invalid { error: String },
+    Network(anyhow::Error),
 }
 
 /// Ensures that the commit that we are about to merge has a valid bors config.
-async fn sanity_check_config(
+pub async fn sanity_check_config(
     repo: &RepositoryState,
     commit_sha: &CommitSha,
-) -> anyhow::Result<ConfigCheckResult> {
+) -> Result<(), ConfigCheckError> {
     let config = repo
         .client
         .load_file_at(CONFIG_FILE_PATH, Some(commit_sha.clone()))
-        .await?;
+        .await
+        .map_err(ConfigCheckError::Network)?;
     let Some(config) = config else {
-        return Ok(ConfigCheckResult::Missing);
+        return Err(ConfigCheckError::Missing);
     };
     if let Err(error) = deserialize_config(&config) {
-        Ok(ConfigCheckResult::Invalid {
+        Err(ConfigCheckError::Invalid {
             error: error.to_string(),
         })
     } else {
-        Ok(ConfigCheckResult::Ok)
+        Ok(())
     }
 }
 
@@ -920,7 +915,6 @@ mod tests {
     use std::time::Duration;
 
     use crate::bors::with_mocked_time;
-    use crate::github::CommitSha;
     use crate::github::api::client::HideCommentReason;
     use crate::tests::{BorsBuilder, Commit, GitHub, run_test};
     use crate::tests::{default_branch_name, default_repo_name};
@@ -1618,7 +1612,12 @@ auto_build_failed = ["+foo", "+bar", "-baz"]
     async fn auto_build_missing_config(pool: sqlx::PgPool) {
         run_test(pool, async |ctx: &mut BorsTester| {
             let pr = ctx.open_pr((), |_| {}).await?;
-            ctx.repo().lock().contents.insert(CommitSha(pr.head_sha()), None);
+
+            // The config is checked on the merge commit, but we can't easily "estimate" the merge
+            // commit SHA here, so we set the contents on the `merge` SHA prefix instead.
+            ctx.modify_repo((), |repo| {
+                repo.add_contents_at_sha_prefix("merge", None);
+            });
             ctx.approve(pr.id()).await?;
             ctx.run_merge_queue_now().await;
             insta::assert_snapshot!(ctx.get_next_comment_text(pr.id()).await?, @"The bors config is missing in this PR. Ensure that the config exists at `rust-bors.toml`.");
@@ -1635,14 +1634,13 @@ auto_build_failed = ["+foo", "+bar", "-baz"]
     async fn auto_build_invalid_config(pool: sqlx::PgPool) {
         run_test(pool, async |ctx: &mut BorsTester| {
             let pr = ctx.open_pr((), |_| {}).await?;
-            ctx.repo().lock().contents.insert(
-                CommitSha(pr.head_sha()),
-                Some("[foo bar I am invalid toml!".to_string()),
-            );
+            ctx.modify_repo((), |repo| {
+                repo.add_contents_at_sha_prefix("merge", Some("[foo bar I am invalid toml!"));
+            });
             ctx.approve(pr.id()).await?;
             ctx.run_merge_queue_now().await;
             insta::assert_snapshot!(ctx.get_next_comment_text(pr.id()).await?, @"
-            The bors config at `rust-bors.toml` is invalid in this PR. Parse error:
+            Merging this PR would produce an invalid bors config at `rust-bors.toml`:
 
             ```
             TOML parse error at line 1, column 5
@@ -1652,6 +1650,8 @@ auto_build_failed = ["+foo", "+bar", "-baz"]
             unclosed table, expected `]`
 
             ```
+
+            The pull request has been unapproved.
             ");
             ctx.pr(pr.id())
                 .await

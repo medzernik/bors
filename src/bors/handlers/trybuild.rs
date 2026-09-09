@@ -132,8 +132,9 @@ pub(super) async fn command_try_build(
             )
             .await
             .map_err(|error| match error {
-                StartBuildError::GithubError(error) | StartBuildError::DatabaseError(error) => {
-                    error
+                StartBuildError::Github(error) | StartBuildError::Database(error) => error,
+                StartBuildError::ConfigCheck(error) => {
+                    anyhow::anyhow!("Invalid bors config: {error:?}")
                 }
             })?;
 
