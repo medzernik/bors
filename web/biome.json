@@ -24,6 +24,15 @@
       "quoteStyle": "double"
     }
   },
+  "html": {
+    "experimentalFullSupportEnabled": true,
+    "linter": {
+      "enabled": true
+    },
+    "formatter": {
+      "enabled": true
+    }
+  },
   "assist": {
     "enabled": true,
     "actions": {
