@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import Queue from "./pages/queue/Queue.vue";
 import Help from "./pages/help/Help.vue";
+import NotFound from "./pages/not_found/NotFound.vue";
 
 const routes = {
     "/": Queue,
@@ -15,7 +16,7 @@ window.addEventListener("hashchange", () => {
 });
 
 const currentView = computed(() => {
-    return routes[currentPath.value.slice(1) || "/"] || Queue;
+    return routes[currentPath.value.slice(1) || "/"] || NotFound;
 });
 </script>
 
