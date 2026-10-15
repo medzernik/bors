@@ -1,44 +1,45 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "files": {
-    "ignoreUnknown": false
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "trailingNewline": true
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "preset": "recommended"
-    }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double"
-    }
-  },
-  "html": {
-    "experimentalFullSupportEnabled": true,
-    "linter": {
-      "enabled": true
+    "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true
+    },
+    "files": {
+        "ignoreUnknown": false
     },
     "formatter": {
-      "enabled": true
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "trailingNewline": true
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "preset": "recommended"
+        }
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "double"
+        }
+    },
+    "html": {
+        "experimentalFullSupportEnabled": true,
+        "linter": {
+            "enabled": true
+        },
+        "formatter": {
+            "enabled": true
+        }
+    },
+    "assist": {
+        "enabled": true,
+        "actions": {
+            "source": {
+                "organizeImports": "on"
+            }
+        }
     }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  }
 }
