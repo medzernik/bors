@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import {ref, computed} from "vue";
 import Queue from "./pages/queue/Queue.vue";
 import Help from "./pages/help/Help.vue";
-import NotFound from "./pages/not_found/NotFound.vue";
+
 
 const routes = {
     "/": Queue,

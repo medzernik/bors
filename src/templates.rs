@@ -6,6 +6,7 @@ use crate::database::{
 use crate::ec2::{Ec2Instance, Ec2InstanceStatus};
 use crate::github::PullRequestNumber;
 use askama::Template;
+use ts_bind::TsBind;
 use axum::response::{Html, IntoResponse, Response};
 use chrono::Utc;
 use http::StatusCode;
@@ -85,7 +86,8 @@ pub struct PendingBuild {
     pub workflow: Option<PendingWorkflow>,
 }
 
-#[derive(Template)]
+#[derive(Template, TsBind)]
+#[ts_bind(export = "../../web/src/typings/queue.ts")]
 #[template(path = "queue.html", whitespace = "minimize")]
 pub struct QueueTemplate {
     pub repo_name: String,
