@@ -1,16 +1,16 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "commonjs",
-    "jsx": "react-jsx",
-  },
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.node.json",
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "commonjs",
+        "jsx": "react-jsx"
     },
-    {
-      "path": "./tsconfig.app.json",
-    },
-  ],
+    "files": [],
+    "references": [
+        {
+            "path": "./tsconfig.node.json"
+        },
+        {
+            "path": "./tsconfig.app.json"
+        }
+    ]
 }

@@ -1,8 +1,6 @@
 <script setup lang="ts"></script>
 
-<template src="templates/help.html">
-
-</template>
+<template src="../../../templates/help.html"></template>
 
 <style lang="scss">
 @import "/src/main.css";
