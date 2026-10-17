@@ -1,8 +1,14 @@
 {
     "compilerOptions": {
         "target": "esnext",
-        "module": "commonjs",
-        "jsx": "react-jsx"
+        "module": "es2022",
+        "moduleResolution": "node",
+        "rootDir": "src",
+        "esModuleInterop": true,
+        "jsx": "preserve",
+        "jsxFactory": "h",
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
     },
     "files": [],
     "references": [

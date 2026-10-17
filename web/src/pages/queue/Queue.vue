@@ -5,4 +5,6 @@
     <p>Visit to read the documentation</p>
 </template>
 
-<style scoped></style>
+<style scoped lang="scss">
+@import "queue.css";
+</style>
