@@ -62,6 +62,7 @@ pub const TRY_BRANCH_NAME: &str = "automation/bors/try";
 pub const TRY_PERF_BRANCH_NAME: &str = "automation/bors/try-perf";
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(ts_rs::TS)]
 pub enum BuildKind {
     /// Try build on a PR, to test a set of CI jobs.
     Try,
@@ -306,6 +307,7 @@ impl RepositoryStore {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(ts_rs::TS)]
 pub enum PullRequestStatus {
     Closed,
     Draft,

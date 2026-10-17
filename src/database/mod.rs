@@ -24,6 +24,7 @@ type PrimaryKey = i32;
 
 /// A unique identifier for a workflow run.
 #[derive(Clone, Copy, Debug)]
+#[derive(ts_rs::TS)]
 pub struct RunId(pub u64);
 
 /// Postgres doesn't support unsigned integers.
@@ -192,6 +193,7 @@ impl sqlx::Decode<'_, sqlx::Postgres> for PullRequestStatus {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[derive(ts_rs::TS)]
 pub struct ApprovalInfo {
     /// The user who approved the pull request.
     pub approver: String,
@@ -228,6 +230,7 @@ pub enum QueueStatus<'a> {
 
 /// Represents the approval status of a pull request.
 #[derive(Debug, Clone, PartialEq)]
+#[derive(ts_rs::TS)]
 pub enum ApprovalStatus {
     NotApproved,
     TentativelyApproved(ApprovalInfo),
@@ -271,6 +274,7 @@ impl<'r> sqlx::Decode<'r, sqlx::Postgres> for ApprovalStatus {
 #[derive(Debug, PartialEq, Clone, sqlx::Type)]
 #[sqlx(type_name = "TEXT")]
 #[sqlx(rename_all = "snake_case")]
+#[derive(ts_rs::TS)]
 pub enum MergeableState {
     Mergeable,
     HasConflicts,
@@ -294,6 +298,7 @@ impl From<OctocrabMergeableState> for MergeableState {
 #[derive(Debug, PartialEq, Clone, Copy, sqlx::Type)]
 #[sqlx(type_name = "TEXT")]
 #[sqlx(rename_all = "lowercase")]
+#[derive(ts_rs::TS)]
 pub enum DelegatedPermission {
     Try,
     Review,
@@ -328,6 +333,7 @@ impl FromStr for DelegatedPermission {
 #[derive(Copy, Clone, Debug, PartialEq, sqlx::Type)]
 #[sqlx(type_name = "TEXT")]
 #[sqlx(rename_all = "lowercase")]
+#[derive(ts_rs::TS)]
 pub enum BuildStatus {
     /// The build is still waiting for results.
     Pending,
@@ -417,6 +423,7 @@ impl sqlx::Decode<'_, sqlx::Postgres> for PgDuration {
 /// Note: the order of fields of this struct is load-bearing, and has to match the table column
 /// layout, because the encode/decode functions are automatically derived.
 #[derive(Debug, Clone, PartialEq, sqlx::Type)]
+#[derive(ts_rs::TS)]
 #[sqlx(type_name = "build")]
 pub struct BuildModel {
     pub id: PrimaryKey,
@@ -436,6 +443,7 @@ pub struct BuildModel {
     /// What kind of build this is (`try` or `auto`).
     pub kind: BuildKind,
     /// Build time to finish CI workflow.
+    #[ts(skip)]
     pub duration: Option<PgDuration>,
     /// The pull request number to which this build is attached.
     /// We store only the number, and not the whole model, because a PR may also contain a build.
@@ -474,7 +482,7 @@ impl sqlx::Decode<'_, sqlx::Postgres> for BuildKind {
 }
 
 /// Represents a pull request.
-#[derive(Debug)]
+#[derive(Debug, ts_rs::TS)]
 pub struct PullRequestModel {
     pub id: PrimaryKey,
     /// The GitHub repository this PR belongs to.
@@ -609,12 +617,14 @@ impl PullRequestModel {
 }
 
 #[derive(Debug)]
+#[derive(ts_rs::TS)]
 pub enum DelegationStatus {
     NotDelegated,
     Delegated(Delegation),
 }
 
 #[derive(Debug)]
+#[derive(ts_rs::TS)]
 pub struct Delegation {
     /// GitHub ID of the user who was delegated the permissions.
     delegatee: u64,
@@ -661,6 +671,7 @@ impl<'r> sqlx::Decode<'r, sqlx::Postgres> for DelegationStatus {
 #[derive(Debug, Clone, PartialEq, sqlx::Type)]
 #[sqlx(type_name = "TEXT")]
 #[sqlx(rename_all = "lowercase")]
+#[derive(ts_rs::TS)]
 pub enum WorkflowType {
     /// GitHub Actions workflow.
     Github,
@@ -672,6 +683,7 @@ pub enum WorkflowType {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, sqlx::Type)]
 #[sqlx(type_name = "TEXT")]
 #[sqlx(rename_all = "lowercase")]
+#[derive(ts_rs::TS)]
 pub enum WorkflowStatus {
     /// Workflow is running.
     Pending,
@@ -689,6 +701,7 @@ impl WorkflowStatus {
 
 /// Represents a workflow run, coming either from Github Actions or from some external CI.
 #[derive(Debug)]
+#[derive(ts_rs::TS)]
 pub struct WorkflowModel {
     pub id: PrimaryKey,
     /// The build this workflow is associated with.
@@ -708,6 +721,7 @@ pub struct WorkflowModel {
 
 /// Represents the state of a repository's tree.
 #[derive(Debug, PartialEq, Clone)]
+#[derive(ts_rs::TS)]
 pub enum TreeState {
     /// The repository tree is open for changes
     Open,

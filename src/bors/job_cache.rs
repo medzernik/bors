@@ -137,6 +137,7 @@ struct WorkflowKey {
 }
 
 #[derive(Clone, Debug)]
+#[derive(ts_rs::TS)]
 pub enum WorkflowJobStatus {
     Started,
     Completed,
@@ -152,6 +153,7 @@ impl WorkflowJobStatus {
 }
 
 #[derive(Clone, Debug)]
+#[derive(ts_rs::TS)]
 pub struct WorkflowJobData {
     pub name: String,
     pub status: WorkflowJobStatus,
