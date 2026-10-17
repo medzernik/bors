@@ -6,7 +6,6 @@ use crate::database::{
 use crate::ec2::{Ec2Instance, Ec2InstanceStatus};
 use crate::github::PullRequestNumber;
 use askama::Template;
-use ts_bind::TsBind;
 use axum::response::{Html, IntoResponse, Response};
 use chrono::Utc;
 use http::StatusCode;
@@ -59,6 +58,7 @@ pub struct RepositoryView {
     pub treeclosed: bool,
 }
 
+#[derive(ts_rs::TS)]
 pub struct PullRequestStats {
     pub total_count: usize,
     pub in_queue_count: usize,
@@ -66,6 +66,7 @@ pub struct PullRequestStats {
 }
 
 /// A displayable view of a map of rollups to their members, meant to be used with data attributes
+#[derive(ts_rs::TS)]
 pub struct RollupsInfo {
     pub rollups: HashMap<PullRequestNumber, HashSet<PullRequestNumber>>,
 }
@@ -76,18 +77,20 @@ impl From<HashMap<PullRequestNumber, HashSet<PullRequestNumber>>> for RollupsInf
     }
 }
 
+#[derive(ts_rs::TS)]
 pub struct PendingWorkflow {
     pub workflow: WorkflowModel,
     pub jobs: Vec<WorkflowJobData>,
 }
 
+#[derive(ts_rs::TS)]
 pub struct PendingBuild {
     pub build: BuildModel,
     pub workflow: Option<PendingWorkflow>,
 }
 
-#[derive(Template, TsBind)]
-#[ts_bind(export = "../../web/src/typings/queue.ts")]
+#[derive(Template, ts_rs::TS)]
+#[ts(export)]
 #[template(path = "queue.html", whitespace = "minimize")]
 pub struct QueueTemplate {
     pub repo_name: String,
@@ -103,8 +106,10 @@ pub struct QueueTemplate {
     // Pending auto build(s)
     pub pending_builds: HashMap<PullRequestNumber, PendingBuild>,
     // Guesstimated duration to merge all current approved/pending PRs in the queue
+    #[ts(skip)]
     pub expected_remaining_duration: Option<Duration>,
     // Average build duration over the past few successful auto builds
+    #[ts(skip)]
     pub average_build_duration: Duration,
     pub ec2_configured: bool,
 }

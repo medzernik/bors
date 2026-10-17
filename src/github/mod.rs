@@ -31,6 +31,7 @@ use crate::bors::PullRequestStatus;
 
 /// Unique identifier of a GitHub repository
 #[derive(PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
+#[derive(ts_rs::TS)]
 pub struct GithubRepoName {
     owner: String,
     name: String,
@@ -252,6 +253,7 @@ impl From<octocrab::models::pulls::PullRequest> for PullRequest {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(ts_rs::TS)]
 pub struct PullRequestNumber(pub u64);
 
 impl From<u64> for PullRequestNumber {

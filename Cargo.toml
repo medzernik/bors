@@ -73,7 +73,7 @@ which = "8"
 pulldown-cmark = "0.13"
 regex = "1"
 base64 = "0.23"
-ts-bind = "0.1.7"
+ts-rs = { version = "12.0.1", features = ["chrono-impl"] }
 
 [dev-dependencies]
 insta = "1.48"
@@ -87,6 +87,3 @@ urlencoding = "2"
 
 [profile.release]
 debug = 1
-
-[profile.dev.package.sqlx-macros]
-opt-level = 3

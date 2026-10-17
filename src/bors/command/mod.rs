@@ -48,6 +48,7 @@ pub enum Approver {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(ts_rs::TS)]
 pub enum RollupMode {
     Always,
     Iffy,
