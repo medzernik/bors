@@ -1,6 +1,6 @@
 {
     "name": "web",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "private": true,
     "type": "module",
     "scripts": {
@@ -15,7 +15,6 @@
         "vue": "^3.5.42"
     },
     "devDependencies": {
-        "@biomejs/biome": "2.5.15",
         "@eslint/css": "^2.0.0",
         "@eslint/js": "^10.0.1",
         "@tsconfig/node24": "^24.0.5",
